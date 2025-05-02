@@ -6,7 +6,7 @@ theme_set(theme_cowplot())
 # Setup the global parameters --------------------------------------------
 forecast_date <- Sys.Date()
 ## Switch to the date you are making the forecast (should be a wednesday) for testing
-forecast_date <- ymd('2025-04-30')
+# forecast_date <- ymd('2025-04-30')
 
 earliest_expected_data_date <- forecast_date - days(4)
 desired_horizon <- 5
