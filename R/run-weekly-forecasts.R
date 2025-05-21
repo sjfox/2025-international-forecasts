@@ -9,8 +9,15 @@ forecast_date <- Sys.Date()
 # forecast_date <- ymd('2025-04-30')
 
 earliest_expected_data_date <- forecast_date - days(4)
+
+drop_table <- tibble(country = c('Australia', 'Brazil', 'Chile', 'South Africa', 'Thailand'),
+                     horizons_dropped = c(2, 3, 2, 2, 0)) 
+## horizons_dropped definition:
+## If you drop `1` horizon you are dropping data from anything equal to or more recent than horizon -1. 
+## If you drop `0`, you are dropping anything from horizon 0 and from the future.
+
 desired_horizon <- 5
-weeks_to_drop <- 1
+#weeks_to_drop <- 0
 
 quantiles_needed <- c(0.01, 0.025, seq(0.05, 0.95, by = 0.05), 0.975, 0.99)
 
@@ -35,7 +42,8 @@ fcast_df_clean |>
          date < forecast_date) |> 
   group_by(country) |> 
   arrange(week) |> 
-  mutate(dropped_data = date >= earliest_expected_data_date - days(weeks_to_drop*7)) -> curr_yr_df 
+  left_join(drop_table, by = 'country') |> 
+  mutate(dropped_data = date >= earliest_expected_data_date + days(7) - days(horizons_dropped*7)) -> curr_yr_df 
 
 fcast_df_clean |> 
   filter(year == year(forecast_date)-1,
@@ -110,23 +118,23 @@ curr_week_fcasts |>
 
 # Copy files to the submission location -----------------------------------
 ## You need to add your model folder here if it's not already accounted for
-model_folder_loc <- case_when(grepl(pattern = 'Copycat', fcast_files) ~ 
+model_folder_loc <- case_when(grepl(pattern = 'Copycat', curr_week_fcasts) ~ 
                              'UGA_flucast-Copycat/',
-                           grepl(pattern = 'INFLAenza', fcast_files) ~ 
+                           grepl(pattern = 'INFLAenza', curr_week_fcasts) ~ 
                              'UGA_flucast-INFLAenza/',
-                           grepl(pattern = 'GBQR', fcast_files) ~ 
+                           grepl(pattern = 'GBQR', curr_week_fcasts) ~ 
                              'UGA_flucast-GBQR/',
-                           grepl(pattern = 'seasonal_baseline', fcast_files) ~ 
+                           grepl(pattern = 'seasonal_baseline', curr_week_fcasts) ~ 
                              'UGA_flucast-seasonal_baseline/',
                           )
 
 ## Concatenate to get all file paths
 new_file_locs <- paste0("../NCIRD-GIB-FluNET-Forecasting/model-output/", 
                         model_folder_loc, 
-                        str_remove(fcast_files, pattern = 'processed-data/rt-forecasts/'))
+                        str_remove(curr_week_fcasts, pattern = 'processed-data/rt-forecasts/'))
 
 ## Copy files over based on the relative file path
-file.copy(from = fcast_files, 
+file.copy(from = curr_week_fcasts, 
           to = new_file_locs, 
           copy.mode = TRUE, 
           overwrite = T)

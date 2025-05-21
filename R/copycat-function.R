@@ -41,7 +41,7 @@ international_copycat <- function(curr_data,
   traj_temp |>   
     mutate(weight = ifelse(weight < min_allowed_weight, min_allowed_weight, weight)) |>
     arrange(weight) |>
-    slice(1:10) |> 
+    slice(1:20) |> 
     sample_n(size = nsamps, replace = T, weight = 1/weight^2) |> 
     mutate(id = seq_along(weight)) |> 
     select(id, country, year, week_change) -> trajectories

@@ -135,19 +135,26 @@ historical_fcast_df |>
 save(traj_db, historical_fcast_df, 
      file = 'processed-data/copycat-spline-traj.rda')
 
-
 # Make forecasts ----------------------------------------------------------
 # browser()
+
+horizon_0_date <- earliest_expected_data_date +days(7)
+
 countries <- unique(curr_fcast_df$country)
 country_forecasts <- vector('list', length = length(countries))
 for(curr_country in countries){
   # curr_country <- 'Chile'
   ## Subset data to correct time period and location
+  
+  drop_table |> 
+    filter(country == curr_country) |> 
+    pull(horizons_dropped) -> horizons_to_drop
+  
   curr_fcast_df |>
     ungroup() |>
     filter(country == curr_country,
            year == curr_resp_season,
-           date < earliest_expected_data_date - days(weeks_to_drop*7)) |> ## Removes most recent data point
+           date < horizon_0_date - days(horizons_to_drop*7)) |> ## Removes most recent data point
     mutate(value = value+1) |> ## Makes sure no zeroes, need to correct later
     mutate(curr_weekly_change = log(lead(value)/value)) |> 
     select(week, value, curr_weekly_change) |>
@@ -155,7 +162,7 @@ for(curr_country in countries){
                             filter(country == curr_country),
                      recent_weeks_touse = 100,
                      resp_week_range = 0,
-                     forecast_horizon = desired_horizon + weeks_to_drop) |>
+                     forecast_horizon = desired_horizon + horizons_to_drop-1) |>
     mutate(forecast = forecast-1) |>
     mutate(forecast = ifelse(forecast < 0, 0, forecast)) -> forecast_trajectories
   
@@ -163,7 +170,7 @@ for(curr_country in countries){
   forecast_trajectories |>
     group_by(week) |>
     summarize(qs = list(value = quantile(forecast, probs = quantiles_needed))) |>
-    mutate(horizon = seq_along(week)-weeks_to_drop-2) |>
+    mutate(horizon = seq_along(week)-horizons_to_drop-1) |>
     unnest_wider(qs) |>
     gather(quantile, value, -week, -horizon) |>
     ungroup() |>
