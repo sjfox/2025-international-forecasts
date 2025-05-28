@@ -88,7 +88,7 @@ get_seasonal_spline_vals <- function(season_weeks, value){
   weekly_change <- ifelse(is.na(weekly_change), 1, weekly_change)
   df <- tibble(new_season_weeks, weekly_change) 
   
-  mod <- gam(log(weekly_change) ~ s(new_season_weeks, length(season_weeks)/10), data = df)
+  mod <- gam(log(weekly_change) ~ s(new_season_weeks, length(season_weeks)/4), data = df)
   
   df |>
     ggplot(aes(new_season_weeks, log(weekly_change))) +
@@ -160,8 +160,8 @@ for(curr_country in countries){
     select(week, value, curr_weekly_change) |>
     international_copycat(db = traj_db |> 
                             filter(country == curr_country),
-                     recent_weeks_touse = 100,
-                     resp_week_range = 0,
+                     recent_weeks_touse = 13,
+                     resp_week_range = 5,
                      forecast_horizon = desired_horizon + horizons_to_drop-1) |>
     mutate(forecast = forecast-1) |>
     mutate(forecast = ifelse(forecast < 0, 0, forecast)) -> forecast_trajectories

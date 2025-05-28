@@ -2,7 +2,7 @@ international_copycat <- function(curr_data,
                                   forecast_horizon = 5, ## How many weeks forecast and plotted?
                                   recent_weeks_touse = 5, ## 100 means all data from season are used
                                   nsamps = 1000,
-                                  resp_week_range = 0,
+                                  resp_week_range = 5,
                                   db = traj_db){
   # browser()
   
@@ -47,7 +47,7 @@ international_copycat <- function(curr_data,
     select(id, country, year, week_change) -> trajectories
   
   
-  # trajectories |>
+  # print(trajectories |>
   #   left_join(db |>
   #               nest(data = c('week', 'pred', 'pred_se')),
   #             by = c('country', 'year')) |>
@@ -57,7 +57,7 @@ international_copycat <- function(curr_data,
   #   ggplot(aes(week, pred, group = interaction(country, year, week_change))) +
   #   geom_point(alpha = .1) +
   #   geom_hline(yintercept=0, lty = 2, color = 'gray') +
-  #   geom_point(data = cleaned_data, aes(week, curr_weekly_change), color = 'red', inherit.aes=F)
+  #   geom_point(data = cleaned_data, aes(week, curr_weekly_change), color = 'red', inherit.aes=F))
   # 
   # browser()
   

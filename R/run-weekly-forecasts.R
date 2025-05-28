@@ -11,7 +11,7 @@ forecast_date <- Sys.Date()
 earliest_expected_data_date <- forecast_date - days(4)
 
 drop_table <- tibble(country = c('Australia', 'Brazil', 'Chile', 'South Africa', 'Thailand'),
-                     horizons_dropped = c(2, 3, 2, 2, 0)) 
+                     horizons_dropped = c(2, 3, 2, 2, 1)) 
 ## horizons_dropped definition:
 ## If you drop `1` horizon you are dropping data from anything equal to or more recent than horizon -1. 
 ## If you drop `0`, you are dropping anything from horizon 0 and from the future.
