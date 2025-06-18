@@ -4,19 +4,25 @@ library(cowplot)
 theme_set(theme_cowplot())
 
 # Setup the global parameters --------------------------------------------
-forecast_date <- Sys.Date()
+forecast_date <- Sys.Date() 
 ## Switch to the date you are making the forecast (should be a wednesday) for testing
 # forecast_date <- ymd('2025-04-30')
 
 earliest_expected_data_date <- forecast_date - days(4)
 
-drop_table <- tibble(country = c('Australia', 'Brazil', 'Chile', 'South Africa', 'Thailand'),
-                     horizons_dropped = c(2, 3, 2, 2, 1)) 
+country_parm_table <- tibble(country = c('Australia', 'Brazil', 'Chile', 'South Africa', 'Thailand'),
+                             horizons_dropped = c(1, 3, 2, 2, 0),  ## Most weeks Thailand should be 0, but if they missing data should be -1
+                             min_fcast_horizon = c(-1, -1, -1, -1, -1),
+                             max_fcast_horizon = c(3, 3, 3, 3, 3)) 
 ## horizons_dropped definition:
 ## If you drop `1` horizon you are dropping data from anything equal to or more recent than horizon -1. 
 ## If you drop `0`, you are dropping anything from horizon 0 and from the future.
+## Horizon 0 is a half week of data so you always want to drop at least zero
 
-desired_horizon <- 5
+## Specify the min and max horizon for each country
+
+
+# desired_horizon <- 5
 #weeks_to_drop <- 0
 
 quantiles_needed <- c(0.01, 0.025, seq(0.05, 0.95, by = 0.05), 0.975, 0.99)
@@ -42,13 +48,14 @@ fcast_df_clean |>
          date < forecast_date) |> 
   group_by(country) |> 
   arrange(week) |> 
-  left_join(drop_table, by = 'country') |> 
+  left_join(country_parm_table, by = 'country') |> 
   mutate(dropped_data = date >= earliest_expected_data_date + days(7) - days(horizons_dropped*7)) -> curr_yr_df 
+
 
 fcast_df_clean |> 
   filter(year == year(forecast_date)-1,
          week >= 1,
-         week <= max(curr_yr_df$week) + desired_horizon) |> 
+         week <= max(curr_yr_df$week) + 5) |> 
   group_by(country) |> 
   arrange(week) -> last_yr_df 
 
