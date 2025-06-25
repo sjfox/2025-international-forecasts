@@ -87,22 +87,21 @@ fit_inla_model <- function(
 ############
 #Function to drop weeks/ set horizon 
 ############
-forecast_horizon = desired_horizon + weeks_to_drop
+#forecast_horizon = desired_horizon + weeks_to_drop
 
-drop_weeks <- function(df, 
-                       weeks_to_drop = 1, 
-                       date_col = "ISO_SDATE") {
+#drop_weeks <- function(df, 
+#                       weeks_to_drop = 1, 
+#                       date_col = "ISO_SDATE") {
   
-  df <- df %>% mutate(!!sym(date_col) := as.Date(.data[[date_col]]))
-  # Get the max date and compute forecast reference
-  max_date <- max(df[[date_col]], na.rm = TRUE)
-  forecast_ref <- max_date - lubridate::weeks(weeks_to_drop)
+#  df <- df %>% mutate(!!sym(date_col) := as.Date(.data[[date_col]]))
+#  max_date <- max(df[[date_col]], na.rm = TRUE)
+#  forecast_ref <- max_date - lubridate::weeks(weeks_to_drop)
   
-  df_dropped <- df %>% 
-    filter(.data[[date_col]] <= forecast_ref)
+#  df_dropped <- df %>% 
+#    filter(.data[[date_col]] <= forecast_ref)
   
-  return(df_dropped)
-}
+#  return(df_dropped)
+#}
 
 
 #####################
@@ -166,6 +165,58 @@ prep_fit_data <- function(disease_df, forecast_horizon) {
     arrange(t, iloc)
 }
 
+################
+#prep fit
+#################
+prep_fit_data_update <- function(disease_df, forecast_horizon) {
+  library(dplyr)
+  library(tidyr)
+  library(lubridate)
+  library(forcats)
+  
+  # 1) Clean & index your historic df
+  disease_df <- disease_df %>%
+    mutate(ISO_SDATE = as.Date(ISO_SDATE)) %>%
+    filter(ISO_SDATE >= as.Date("2015-01-01")) %>%
+    mutate(ISO_WEEK = epiweek(ISO_SDATE))
+  
+  ret <- disease_df %>%
+    group_by(ISO_SDATE) %>%
+    mutate(t = cur_group_id(), .after = ISO_SDATE) %>%
+    ungroup() %>%
+    mutate(iloc = as.numeric(fct_inorder(COUNTRY)))
+  
+  # 2) If you need to predict N weeks…
+  if (forecast_horizon > 0) {
+    # a) Figure out the last observed date
+    base_date <- max(ret$ISO_SDATE)
+    
+    # b) Keep only the truly historic data
+    hist_df <- ret %>% filter(ISO_SDATE < base_date)
+    
+    # c) Build the sequence of prediction dates:
+    #    first one is base_date  (“horizon –1”), then one‐week steps
+    pred_dates <- base_date + weeks(0:(forecast_horizon-1))
+    
+    # d) Expand for each country/iloc and give them new t values
+    pred_df <- expand_grid(
+      tibble(
+        ISO_SDATE = pred_dates,
+        t         = max(ret$t) + seq_along(pred_dates),
+        ISO_WEEK  = epiweek(pred_dates)
+      ),
+      distinct(ret, COUNTRY, iloc)
+    )
+    
+    # e) Bind historic < base_date  +  new NA‐rows
+    ret <- bind_rows(hist_df, pred_df)
+  }
+  
+  # 3) Final touch: copy t → t2 and sort
+  ret %>%
+    mutate(t2 = t) %>%
+    arrange(t, iloc)
+}
 
 ##############
 #Sample 
