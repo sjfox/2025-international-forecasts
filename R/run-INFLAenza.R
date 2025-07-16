@@ -9,12 +9,12 @@ inla.setOption(inla.mode="classic")
 ###############
 #Define Parameters 
 ###############
-country_parm_table <- tibble(
-  country           = c('Australia','Brazil','Chile','South Africa','Thailand'),
-  horizons_dropped  = c(1,           3,       2,      2,             0),
-  min_fcast_horizon = c(-1,          -1,      -1,     -1,            -1),
-  max_fcast_horizon = c(3,           3,       3,      3,             3)
-)
+# country_parm_table <- tibble(
+#   country           = c('Australia','Brazil','Chile','South Africa','Thailand'),
+#   horizons_dropped  = c(1,           3,       2,      2,             0),
+#   min_fcast_horizon = c(-1,          -1,      -1,     -1,            -1),
+#   max_fcast_horizon = c(3,           3,       3,      3,             3)
+# )
 
 horizon_0 <- forecast_date + days(3)
 horizon_neg_1 <- forecast_date - days(4) 

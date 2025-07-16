@@ -12,7 +12,7 @@ earliest_expected_data_date <- forecast_date - days(4)
 
 country_parm_table <- tibble(country = c('Australia', 'Brazil', 'Chile', 'South Africa', 'Thailand'),
                              horizons_dropped = c(1, 3, 2, 2, 0),  ## Most weeks Thailand should be 0, but if they missing data should be -1
-                             min_fcast_horizon = c(-1, -1, -1, -1, -1),
+                             min_fcast_horizon = c(-1, -1, -1, -1, 0),
                              max_fcast_horizon = c(3, 3, 3, 3, 3)) 
 ## horizons_dropped definition:
 ## If you drop `1` horizon you are dropping data from anything equal to or more recent than horizon -1. 
@@ -32,7 +32,8 @@ source('R/copycat-function.R')
 source('R/run-copycat.R')
 
 # Run INFLAenza -------------------------------------------------------------
-
+source('R/INFLAenza-function.R')
+source('R/run-INFLAenza.R')
 
 
 # Run GBQR -------------------------------------------------------------
@@ -165,6 +166,6 @@ validate_and_missing <- function(fcast_file, hub_rel_path){
 
 str_remove(new_file_locs, pattern = '../NCIRD-GIB-FluNET-Forecasting/model-output/') |> 
   map(validate_and_missing, hub_rel_path = '../NCIRD-GIB-FluNET-Forecasting') -> validation_objects
-
+ 
 
 
