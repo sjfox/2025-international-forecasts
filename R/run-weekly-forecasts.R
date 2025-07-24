@@ -37,7 +37,8 @@ source('R/run-INFLAenza.R')
 
 
 # Run GBQR -------------------------------------------------------------
-
+source('R/GBQR-function.R')
+source('R/run-GBQR.R')
 
 
 # Make the plots! ---------------------------------------------------------
