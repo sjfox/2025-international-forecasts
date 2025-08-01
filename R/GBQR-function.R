@@ -753,12 +753,7 @@ run_gbqr_pipeline <- function(country, date_str, ref_date) {
   
   # Set bagging + quantile settings
   num_bags <- 100
-  q_levels <- c(
-    0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35,
-    0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85,
-    0.9, 0.95, 0.975
-  )
-  
+  q_levels <- c(0.01, 0.025, seq(0.05, 0.95, by = 0.05), 0.975, 0.99)
   q_labels <- as.character(q_levels)
   bag_frac_samples <- 0.7
   nrounds <- 100
